@@ -25,8 +25,8 @@ module.exports.postLogin = (req, res, next) => {
 		} 
 		if (!user) {
 			return res.status(200).json({
-				error : "Incorrect username or password.",
-				message : "Error: User does not exists"
+				error : info.message,
+				message : "Error logging in the user"
 			});
 		} 
 
@@ -39,6 +39,7 @@ module.exports.postLogin = (req, res, next) => {
 				// user data
 				const userData = {
 					_id: user._id,
+					user_type: "User",
 					name: user.name,
 					email: user.email
 				}
@@ -98,6 +99,7 @@ module.exports.signUp = (req, res) => {
 				// user data
 				const userData = {
 					_id: user._id,
+					user_type: "User",
 					name: user.name,
 					email: user.email
 				}
@@ -133,6 +135,7 @@ module.exports.getRefreshToken = (req, res, next) => {
 	   	// user data
 	   	const userData = {
 	   		_id: user._id,
+	   		user_type: "User",
 	   		name: user.name,
 	   		email: user.email
 	   	}

@@ -23,6 +23,7 @@ module.exports.postLogin = (req, res, next) => {
 				message : "Error logging in the client"
 			});
 		} 
+
 		if (!client) {
 			return res.status(200).json({
 				error : info.message,
@@ -39,6 +40,7 @@ module.exports.postLogin = (req, res, next) => {
 				// client data
 				const clientData = {
 					_id: client._id,
+					user_type: "Client",
 					name: client.name,
 					email: client.email
 				}
@@ -50,7 +52,7 @@ module.exports.postLogin = (req, res, next) => {
 
 				refreshTokens[refreshToken] = clientData.email;
 
-				//console.log(clientData, refreshTokens);
+				console.log(clientData, refreshTokens);
 
 				return res.status(200).json({
 					success : true,
@@ -85,41 +87,23 @@ module.exports.signUp = (req, res) => {
 		} 
 
 		if (!client) {
-			console.log(err, client, info)
-
 			return res.status(200).json({
 				error : `Error creating a new client. ${ info.message }`,
 				message : "Error creating a new client"
 			});
 		} 
 
-		if(!err && !client){
-			req.login(client, {session: false}, (err) => {
-				if (err) res.send(err);
-
-				// client data
-				const clientData = {
-					_id: client._id,
-					name: client.name,
-					email: client.email
-				}
-
-				// set access token
-				const token = jwt.sign(clientData, process.env.jwt_secret, { expiresIn: 300 });
-				
-				// set refresh token
-				const refreshToken = randtoken.uid(256);
-				refreshTokens[refreshToken] = clientData.email;
-
-				return res.status(200).json({
-					success : true,
-					message : 'You successfully logged in your account',
-					client  : clientData,
-					token   : token, 
-					refreshToken: refreshToken
-				});
-			});
-		}
+		res.status(200).json({
+			success : true,
+			message : 'You successfully created a new account',
+			client  : {
+				name   : client.name,
+				email  : client.email,
+				company: client.company,
+				phone  : client.phone,
+				address: client.address
+			}
+		});
 	})(req, res);
 }
 
@@ -135,6 +119,7 @@ module.exports.getRefreshToken = (req, res, next) => {
 	   	// client data
 	   	const clientData = {
 	   		_id: client._id,
+	   		user_type: "Client",
 	   		name: client.name,
 	   		email: client.email
 	   	}
@@ -146,38 +131,38 @@ module.exports.getRefreshToken = (req, res, next) => {
 	   		message : 'You successfully acquired a refresh token',
 	   		refreshToken   : refreshToken
 	   	});
-	   }
-
-	   else {
-	   	return res.status(200).json({
-	   		success : false,
-	   		error: "Invalid Refresh Token"
-	   	});
-	   }
 	}
 
-	module.exports.postRejectToken = (req, res, next) => {
-		let refreshToken = req.body.refreshToken 
-
-		if(refreshToken in refreshTokens) { 
-			delete refreshTokens[refreshToken]
-		} 
-
-		return res.send(204); 
-	}
-
-	/* Get client profile */
-	module.exports.getProfile = (req, res) => {
-		return res.status(200).json({ 
-			success: true, 
-			error  : req.flash('error'),
-			client   : req.client,
-			message:'Successfully fetched profile'
+	else {
+		return res.status(200).json({
+		   	success : false,
+		   	error: "Invalid Refresh Token"
 		});
 	}
+}
 
-	module.exports.getLogout = (req, res) => {
-		req.logout();
-		res.clearCookie('jwt');
-		res.redirect('/api/client/signin')
-	};
+module.exports.postRejectToken = (req, res, next) => {
+	let refreshToken = req.body.refreshToken 
+
+	if(refreshToken in refreshTokens) { 
+		delete refreshTokens[refreshToken]
+	} 
+
+	return res.send(204); 
+}
+
+/* Get client profile */
+module.exports.getProfile = (req, res) => {
+	return res.status(200).json({ 
+		success: true, 
+		error  : req.flash('error'),
+		client : req.user,
+		message:'Successfully fetched profile'
+	});
+}
+
+module.exports.getLogout = (req, res) => {
+	req.logout();
+	res.clearCookie('jwt');
+	res.redirect('/api/client/signin')
+};

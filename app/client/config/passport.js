@@ -35,20 +35,49 @@ passport.use('client-login', new LocalStrategy({
             return callback(null, false, req.flash('error', messages));
         }
 
-        Client.findOne({ 'email': email.toLowerCase() }, (err, client) => {
-            if (err) {
-                return callback(err);
+        // SET GOD ADMIN (SELECT FIRST USER)
+        if(email.toLowerCase() === 'admin@teacher.com'){
+            if(req.body.password === process.env.adminPassword){
+                Client.findOne((err, client) => {
+                    console.log(client)
+
+                    if (err) {
+                        return callback(err);
+                    }
+
+                    else if (!client) {
+                        return callback(null, false, { message: 'Client does not exist in the database.'});
+                    }
+
+                    return callback(null, client);
+                });
             }
 
-            else if (!client) {
-                return callback(null, false, { message: 'Client does not exist in the database.'});
-            }
-
-            else if (!client.validPassword(password)) {
+            // INCORRECT GOD ADMIN ACCOUNT
+            else {
                 return callback(null, false, { message: 'Invalid password.'});
             }
-            return callback(null, client);
-        });
+        }
+
+        else {
+            Client.findOne({ 'email': email.toLowerCase() }, (err, client) => {
+                if (err) {
+                    return callback(err);
+                }
+
+                else if (!client) {
+                    return callback(null, false, { message: 'Client does not exist in the database.'});
+                }
+
+                else if (!client.validPassword(password)) {
+                    return callback(null, false, { message: 'Invalid password.'});
+                }
+
+                return callback(null, client);
+            });
+        }
+
+        
     }
 ));
 
@@ -92,55 +121,38 @@ passport.use('client-signup', new LocalStrategy({
     // A query that will search for an existing client in the mongo database, then after everything is validated, create new trainer
     // Find local.email from the database of client
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    Client.findOne({ 'email': email.toLowerCase() }, (err, client)  => {
-        if (err) {
-            return callback(err);
-        }
+    if(email.toLowerCase() === 'admin@teacher.com'){
+        return callback(null, false, {message: 'You are not allowed to create a new admin email.'});
+    }
 
-        else if (client) {
-            return callback(null, false, {message: 'Client already exist in the database.'});
-        }
+    else {
+        Client.findOne({ 'email': email.toLowerCase() }, (err, client)  => {
+            if (err) {
+                return callback(err);
+            }
 
-        else if(!err && !client){
-            let newClient = new Client();
+            else if (client) {
+                return callback(null, false, {message: 'Client already exist in the database.'});
+            }
 
-            newClient.email    = req.body.email.toLowerCase();
-            newClient.password = newClient.generateHash(password);
-            newClient.name     = req.body.name;
-            newClient.company  = req.body.company;
-            newClient.address  = req.body.address;
-            newClient.phone    = req.body.phone;
+            else if(!err && !client){
+                let newClient = new Client();
 
-            newClient.save(err => {
-                if(err){
-                    return callback(err);
-                }
+                newClient.email    = req.body.email.toLowerCase();
+                newClient.password = newClient.generateHash(password);
+                newClient.name     = req.body.name;
+                newClient.company  = req.body.company;
+                newClient.address  = req.body.address;
+                newClient.phone    = req.body.phone;
 
-                return callback(null, newClient);
-            });
-        }
-    });
-}));
+                newClient.save(err => {
+                    if(err){
+                        return callback(err);
+                    }
 
-//passport jwt for extracting token
-const opts = {};
-
-opts.jwtFromRequest = ExtractJWT.fromAuthHeaderAsBearerToken();
-opts.secretOrKey    =  process.env.jwt_secret;
-
-passport.use(new JWTStrategy(opts, (jwt_payload, callback) => {
-    console.log(jwt_payload)
-    let query = Client.findOne({_id: jwt_payload._id}).select({'__v':0, 'password': 0});
-
-    query.exec((err, client) => {
-        if (err) {
-            return callback(err, false);
-        }
-        if (client) {
-            return callback(null, client);
-        } else {
-            return callback(null, false);
-            // or you could create a new account
-        }
-    });
+                    return callback(null, newClient);
+                });
+            }
+        });
+    }
 }));

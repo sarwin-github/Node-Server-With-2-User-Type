@@ -1,10 +1,6 @@
 const User          = require('../model/users');
+const Client        = require('../../client/model/clients');
 const passport      = require('passport');
-const passportJWT   = require("passport-jwt");
-
-//jwt authentication
-const ExtractJWT    = passportJWT.ExtractJwt;
-const JWTStrategy   = passportJWT.Strategy;
 
 //local
 const LocalStrategy = require('passport-local').Strategy;
@@ -117,25 +113,3 @@ passport.use('user-signup', new LocalStrategy({
     });
 }));
 
-//passport jwt for extracting token
-const opts = {};
-
-opts.jwtFromRequest = ExtractJWT.fromAuthHeaderAsBearerToken();
-opts.secretOrKey    =  process.env.jwt_secret;
-
-passport.use(new JWTStrategy(opts, (jwt_payload, callback) => {
-    //console.log(jwt_payload)
-    let query = User.findOne({_id: jwt_payload._id}).select({'__v':0, 'password': 0});
-
-    query.exec((err, user) => {
-        if (err) {
-            return callback(err, false);
-        }
-        if (user) {
-            return callback(null, user);
-        } else {
-            return callback(null, false);
-            // or you could create a new account
-        }
-    });
-}));
