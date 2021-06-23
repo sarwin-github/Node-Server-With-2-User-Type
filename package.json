@@ -1,0 +1,42 @@
+{
+  "name": "angular-10-server-boiler-plate",
+  "version": "1.0.0",
+  "description": "Angular 10 Backend Boiler Plate",
+  "main": "server.js",
+  "scripts": {
+    "test": "server.js",
+    "dev": "nodemon --exec node -r dotenv/config server.js",
+    "start": "node -r dotenv/config server.js",
+    "debug": "node --debug server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^3.0.1",
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.18.2",
+    "connect-flash": "^0.1.1",
+    "connect-mongo": "^2.0.1",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.5",
+    "csurf": "^1.9.0",
+    "dotenv": "^8.0.0",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "express-validator": "^5.3.0",
+    "helmet": "^3.13.0",
+    "jsonwebtoken": "^8.3.0",
+    "method-override": "^3.0.0",
+    "mongoose": "^4.13.18",
+    "morgan": "^1.9.1",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0",
+    "popper.js": "^1.14.3",
+    "rand-token": "^0.4.0",
+    "serve-favicon": "^2.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  }
+}
