@@ -65,7 +65,7 @@ app.use(express.static(__dirname));
 app.use(passport.initialize());
 
 // JWT validator
-require('./config/passport-jwt-generator');
+require('./config/passport-jwt-validator');
 // client authenticator	
 require('./app/client/config/passport');
 // user authenticator	
