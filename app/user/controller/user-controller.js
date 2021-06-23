@@ -87,7 +87,7 @@ module.exports.signUp = (req, res) => {
 
 		if (!user) {
 			return res.status(200).json({
-				error : `Error creating a new user. ${ info.message }`,
+				error : `Error creating a new user. ${ (info && info.length ? info.join(' ') : "Missing Credentials") }`,
 				message : "Error creating a new user"
 			});
 		} 

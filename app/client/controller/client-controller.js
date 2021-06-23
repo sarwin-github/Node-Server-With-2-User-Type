@@ -86,14 +86,45 @@ module.exports.signUp = (req, res) => {
 			});
 		} 
 
+		console.log(info)
+
 		if (!client) {
 			return res.status(200).json({
-				error : `Error creating a new client. ${ info.message }`,
+				error : `Error creating a new client. ${ (info && info.length > 0 ? info.join(' ') : "Missing Credentials") }`,
 				message : "Error creating a new client"
 			});
 		} 
 
-		res.status(200).json({
+		if(!err && client){
+			req.login(client, {session: false}, (err) => {
+				if (err) res.send(err);
+
+				// client data
+				const clientData = {
+					_id: client._id,
+					user_type: "Client",
+					name: client.name,
+					email: client.email
+				}
+
+				// set access token
+				const token = jwt.sign(clientData, process.env.jwt_secret, { expiresIn: 300 });
+				
+				// set refresh token
+				const refreshToken = randtoken.uid(256);
+				refreshTokens[refreshToken] = clientData.email;
+
+				return res.status(200).json({
+					success : true,
+					message : 'You successfully logged in your account',
+					client  : clientData,
+					token   : token, 
+					refreshToken: refreshToken
+				});
+			});
+		}
+
+		/*res.status(200).json({
 			success : true,
 			message : 'You successfully created a new account',
 			client  : {
@@ -103,7 +134,7 @@ module.exports.signUp = (req, res) => {
 				phone  : client.phone,
 				address: client.address
 			}
-		});
+		});*/
 	})(req, res);
 }
 
